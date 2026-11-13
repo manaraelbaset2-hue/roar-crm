@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROAR CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== THEME — بدّلي الألوان دي بألوان رور لما توصلني ===== */
+:root{
+  --bg:#0f1220; --panel:#171a2b; --panel2:#1e2238; --line:#2a2f4a;
+  --text:#eef1fb; --muted:#9aa2c4;
+  --accent:#ff5a1f; --accent2:#ffb020;   /* برتقالي/ذهبي مؤقت لحين هوية رور */
+  --win:#28c76f; --lose:#ea5455; --warn:#ff9f43;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Tajawal',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+.hidden{display:none!important}
+::-webkit-scrollbar{height:9px;width:9px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px;width:100%;max-width:400px}
+.brand{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px}
+.brand .dot{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:17px}
+.brand h1{font-size:22px;margin:0;letter-spacing:.5px}
+.sub{color:var(--muted);text-align:center;margin:0 0 20px;font-size:14px}
+label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
+input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px 14px;font-size:15px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:12px;padding:13px;width:100%;font-size:15px;font-weight:700;margin-top:18px}
+.btn.secondary{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:500;margin-top:10px}
+.switch{text-align:center;margin-top:16px;color:var(--muted);font-size:14px}
+.switch a{color:var(--accent);cursor:pointer;font-weight:700}
+.msg{margin-top:14px;padding:10px 12px;border-radius:10px;font-size:13px;text-align:center}
+.msg.err{background:rgba(234,84,85,.15);color:#ff9b9c}
+.msg.ok{background:rgba(40,199,111,.15);color:#79e0a6}
+
+#app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.topbar .brand{margin:0}.topbar .brand h1{font-size:18px}
+.spacer{flex:1}
+.bell{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:16px}
+.bell .cnt{position:absolute;top:-7px;left:-7px;background:var(--lose);color:#fff;border-radius:999px;min-width:18px;height:18px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+.email{color:var(--muted);font-size:13px}
+.logout{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:10px;padding:8px 12px;font-size:13px}
+.tabs{display:flex;gap:6px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:57px;z-index:19}
+.tab{background:transparent;border:none;color:var(--muted);padding:9px 16px;border-radius:10px;font-size:15px;font-weight:700;white-space:nowrap;position:relative}
+.tab.active{background:var(--panel2);color:var(--text)}
+.tab .tb{background:var(--lose);color:#fff;border-radius:999px;font-size:11px;font-weight:800;padding:1px 7px;margin-right:4px}
+main{padding:20px;max-width:1300px;margin:0 auto;width:100%}
+
+.alertbar{background:rgba(234,84,85,.14);border:1px solid rgba(234,84,85,.4);color:#ffb3b3;border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-weight:700;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.stat .n{font-size:26px;font-weight:800}
+.stat .l{color:var(--muted);font-size:13px;margin-top:4px}
+.stat .n.accent{color:var(--accent2)}
+.section-t{font-size:17px;font-weight:800;margin:22px 0 12px}
+.list{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:none}
+.row .g{flex:1;min-width:0}
+.row .title{font-weight:700}
+.row .meta{color:var(--muted);font-size:13px;margin-top:2px}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+.chip{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.wa{background:#25D366;color:#063;border:none;border-radius:10px;padding:7px 10px;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap}
+
+.board{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);min-width:240px;width:240px;flex-shrink:0;display:flex;flex-direction:column}
+.col-h{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-weight:800}
+.col-h .sum{font-size:12px;color:var(--muted);font-weight:500}
+.col-body{padding:10px;min-height:80px;display:flex;flex-direction:column;gap:10px;flex:1}
+.col.drop{outline:2px dashed var(--accent);outline-offset:-4px}
+.deal{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:grab}
+.deal:active{cursor:grabbing}
+.deal .dt{font-weight:700;font-size:14px}
+.deal .dc{color:var(--muted);font-size:12px;margin-top:3px}
+.deal .dv{color:var(--accent2);font-weight:800;margin-top:8px;font-size:14px}
+.col[data-stage="مكسوب"] .col-h{color:var(--win)}
+.col[data-stage="مخسور"] .col-h{color:var(--lose)}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.filters{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.filters input,.filters select{width:auto;min-width:130px;flex:0 1 auto;padding:9px 12px;font-size:14px}
+.filters input{flex:1;min-width:160px}
+.addbtn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:12px;padding:11px 18px;font-weight:700;font-size:14px;white-space:nowrap}
+.ghostbtn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:700;font-size:14px;white-space:nowrap}
+.badge{font-size:12px;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.b-lead{background:rgba(108,123,255,.18);color:#aeb6ff}
+.b-active{background:rgba(40,199,111,.18);color:#79e0a6}
+.b-paused{background:rgba(255,159,67,.18);color:#ffce9e}
+.b-dead{background:rgba(234,84,85,.18);color:#ff9b9c}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;width:100%;max-width:520px;max-height:92vh;overflow:auto}
+.modal h3{margin:0 0 6px}
+.modal .close{float:left;background:none;border:none;color:var(--muted);font-size:22px;line-height:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.loading{text-align:center;color:var(--muted);padding:40px}
+
+.repgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.rcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.rcard h4{margin:0 0 14px;font-size:15px}
+.barrow{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px}
+.barrow .bl{width:110px;color:var(--muted);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bartrack{flex:1;background:var(--panel2);border-radius:8px;height:22px;overflow:hidden}
+.barfill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--accent2));min-width:2px}
+.barrow .bv{font-weight:700;flex-shrink:0}
+.gauge{display:flex;align-items:center;gap:16px}
+.ring{width:92px;height:92px;border-radius:50%;background:conic-gradient(var(--win) calc(var(--p,0)*1%),var(--panel2) 0);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ring .in{width:68px;height:68px;border-radius:50%;background:var(--panel);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px}
+.hatpills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.hatpill{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer}
+.hatpill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.detail-sec{margin-top:18px}
+.detail-sec h4{margin:0 0 8px;font-size:14px;color:var(--muted)}
+.mini{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:14px}
+
+/* ===== PRINT REPORT ===== */
+#printArea{display:none}
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff!important;color:#000!important}
+  #app,#login,#modalMount{display:none!important}
+  #printArea{display:block!important}
+  .pr-h{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #ff5a1f;padding-bottom:10px;margin-bottom:16px}
+  .pr-logo{font-size:26px;font-weight:800;letter-spacing:1px;color:#ff5a1f}
+  .pr-title{font-size:20px;font-weight:800;margin:0}
+  .pr-meta{color:#555;font-size:12px;text-align:left}
+  .pr-kpis{display:flex;gap:10px;margin:14px 0}
+  .pr-kpi{flex:1;border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center}
+  .pr-kpi b{display:block;font-size:20px;color:#111}
+  .pr-kpi span{font-size:11px;color:#666}
+  .pr-sec{font-size:15px;font-weight:800;margin:18px 0 8px;color:#111}
+  table.pr{width:100%;border-collapse:collapse;font-size:12px}
+  table.pr th,table.pr td{border:1px solid #ddd;padding:6px 8px;text-align:right}
+  table.pr th{background:#f5f5f5}
+  .pr-foot{margin-top:22px;border-top:1px solid #ddd;padding-top:8px;color:#666;font-size:11px;display:flex;justify-content:space-between}
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="card">
+    <div class="brand"><div class="dot">R</div><h1>ROAR CRM</h1></div>
+    <p class="sub">نظام إدارة عملاء رور</p>
+    <div id="authForm">
+      <label>البريد الإلكتروني</label>
+      <input id="email" type="email" placeholder="you@email.com" autocomplete="username">
+      <label>كلمة المرور</label>
+      <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn" id="submitBtn">تسجيل الدخول</button>
+      <div class="switch" id="switchLine">أول مرة تستخدمي النظام؟ <a id="switchLink">أنشئي حساب</a></div>
+      <div id="authMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="brand"><div class="dot">R</div><h1>ROAR CRM</h1></div>
+    <div class="spacer"></div>
+    <button class="bell" id="bell" title="التنبيهات">🔔<span class="cnt hidden" id="bellCnt">0</span></button>
+    <span class="email" id="userEmail"></span>
+    <button class="logout" id="logoutBtn">خروج</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-view="dash">📊 اللوحة</button>
+    <button class="tab" data-view="pipe">🗂️ البايبلاين</button>
+    <button class="tab" data-view="clients">👥 العملاء</button>
+    <button class="tab" data-view="follow" id="tabFollow">🔔 المتابعات</button>
+    <button class="tab" data-view="reports">📈 التقارير</button>
+  </div>
+  <main id="main"><div class="loading">...جاري التحميل</div></main>
+</div>
+
+<div id="modalMount"></div>
+<div id="printArea"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const SUPABASE_URL="https://vjwaenzdrqsxmnedrvjn.supabase.co";
+const SUPABASE_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqd2FlbnpkcnFzeG1uZWRydmpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ1NTkxNDQsImV4cCI6MjExMDEzNTE0NH0.pVqYl4muaq363aCAp3LLRv2nMhuRoxzatk2qDRxekKM";
+const PREPARED_BY="منار أحمد";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+
+const OPT={
+  status:['عميل محتمل','تم التواصل','عميل حالي','متوقف','منتهي'],
+  hat:['رور','فطين','فريلانس'],
+  stage:['جديد','تم التواصل','عرض سعر','تفاوض','مكسوب','مخسور'],
+  service:['إدارة سوشيال ميديا','إعلانات ممولة','تطوير مواقع','SEO','تصميم','كتابة محتوى','كورس تدريبي','باقة متكاملة','أخرى'],
+  payment:['تحويل بنكي','تمارا','كاش','أخرى'],
+  actype:['مكالمة','واتساب','اجتماع','إيميل','عرض سعر','متابعة']
+};
+const $=id=>document.getElementById(id);
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>(n==null||n==='')?'—':Number(n).toLocaleString('en-US')+' ر.س';
+const options=(arr,sel)=>arr.map(o=>`<option ${o===sel?'selected':''}>${esc(o)}</option>`).join('');
+const waLink=w=>{const d=(w||'').replace(/\D/g,'');return d?`https://wa.me/${d}`:null;};
+const today=()=>new Date().toISOString().slice(0,10);
+const addDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+const dateOf=d=>d.expected_close_date||(d.created_at||'').slice(0,10);
+
+let CACHE={clients:[],deals:[],fups:[]};
+async function loadAll(){
+  const [{data:clients},{data:deals},{data:fups}]=await Promise.all([
+    sb.from('clients').select('*').order('created_at',{ascending:false}),
+    sb.from('deals').select('*'),
+    sb.from('follow_ups').select('*')
+  ]);
+  CACHE={clients:clients||[],deals:deals||[],fups:fups||[]};
+}
+const clientName=id=>CACHE.clients.find(c=>c.id===id)?.name||'—';
+const dueList=()=>CACHE.fups.filter(f=>!f.done&&(!f.due_date||f.due_date<=today()));
+const overdueList=()=>CACHE.fups.filter(f=>!f.done&&f.due_date&&f.due_date<today());
+
+// ===== AUTH =====
+let mode='signin';
+function setMsg(t,cls){$('authMsg').innerHTML=t?`<div class="msg ${cls}">${esc(t)}</div>`:'';}
+function bindSwitch(){document.getElementById('switchLink').onclick=()=>{
+  mode=mode==='signin'?'signup':'signin';
+  $('submitBtn').textContent=mode==='signin'?'تسجيل الدخول':'إنشاء حساب';
+  $('switchLine').innerHTML=mode==='signin'?'أول مرة تستخدمي النظام؟ <a id="switchLink">أنشئي حساب</a>':'عندك حساب؟ <a id="switchLink">سجّلي الدخول</a>';
+  bindSwitch(); setMsg('');
+};}
+bindSwitch();
+$('submitBtn').onclick=async()=>{
+  const email=$('email').value.trim(),password=$('password').value;
+  if(!email||!password){setMsg('اكتبي البريد وكلمة المرور','err');return;}
+  $('submitBtn').disabled=true;setMsg('...لحظة','ok');
+  try{
+    if(mode==='signup'){const {error}=await sb.auth.signUp({email,password});if(error)throw error;}
+    const {error:e2}=await sb.auth.signInWithPassword({email,password});if(e2)throw e2;
+  }catch(err){setMsg(err.message||'خطأ','err');$('submitBtn').disabled=false;}
+};
+sb.auth.onAuthStateChange((_e,s)=>{if(s)showApp(s);});
+sb.auth.getSession().then(({data})=>{if(data.session)showApp(data.session);});
+async function showApp(session){
+  $('login').classList.add('hidden');$('app').classList.remove('hidden');
+  $('userEmail').textContent=session.user.email;
+  await loadAll(); updateBadges(); render('dash'); notifyReminders();
+}
+$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload();};
+$('bell').onclick=()=>{switchTab('follow');};
+
+function updateBadges(){
+  const n=dueList().length;
+  $('bellCnt').textContent=n;$('bellCnt').classList.toggle('hidden',n===0);
+  $('tabFollow').innerHTML='🔔 المتابعات'+(n?` <span class="tb">${n}</span>`:'');
+}
+function notifyReminders(){
+  const due=dueList().length, over=overdueList().length;
+  if(!due) return;
+  if('Notification' in window){
+    if(Notification.permission==='granted') fireNote(due,over);
+    else if(Notification.permission!=='denied') Notification.requestPermission().then(p=>{if(p==='granted')fireNote(due,over);});
+  }
+}
+function fireNote(due,over){
+  try{new Notification('ROAR CRM — تذكير المتابعات',{body:`عندك ${due} متابعة مستحقة اليوم${over?` منها ${over} متأخرة ⚠️`:''}.`});}catch(e){}
+}
+
+function switchTab(view){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
+  render(view);
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.view));
+async function refresh(view){await loadAll();updateBadges();render(view);}
+function render(view){
+  const m=$('main');m.innerHTML='<div class="loading">...جاري التحميل</div>';
+  ({dash:renderDash,pipe:renderPipe,clients:renderClients,follow:renderFollow,reports:renderReports}[view]||renderDash)(m);
+}
+
+// ===== DASHBOARD =====
+function renderDash(m){
+  const {clients,deals}=CACHE;
+  const open=deals.filter(d=>!['مكسوب','مخسور'].includes(d.stage));
+  const openVal=open.reduce((s,d)=>s+(+d.value||0),0);
+  const won=deals.filter(d=>d.stage==='مكسوب');
+  const wonVal=won.reduce((s,d)=>s+(+d.value||0),0);
+  const active=clients.filter(c=>c.status==='عميل حالي').length;
+  const due=dueList(), over=overdueList().length;
+  m.innerHTML=`
+   ${over?`<div class="alertbar" onclick="switchTab('follow')">⚠️ عندك ${over} متابعة متأخرة — اضغطي للمراجعة</div>`:''}
+   <div class="stats">
+     <div class="stat"><div class="n">${clients.length}</div><div class="l">إجمالي العملاء</div></div>
+     <div class="stat"><div class="n">${active}</div><div class="l">عملاء حاليين</div></div>
+     <div class="stat"><div class="n">${open.length}</div><div class="l">فرص مفتوحة</div></div>
+     <div class="stat"><div class="n accent">${money(openVal)}</div><div class="l">قيمة الفرص المفتوحة</div></div>
+     <div class="stat"><div class="n accent">${money(wonVal)}</div><div class="l">مبيعات مكسوبة</div></div>
+   </div>
+   <div class="section-t">🔔 متابعات مستحقة (${due.length})</div>
+   <div class="list">${due.length?due.map(f=>`<div class="row"><span class="chip">${esc(f.type)}</span>
+      <div class="g" style="cursor:pointer" onclick="openClientDetail(${f.client_id})"><div class="title">${esc(clientName(f.client_id))}</div>
+      <div class="meta">${esc(f.notes||'')} ${f.due_date?'• '+f.due_date:''} ${f.due_date&&f.due_date<today()?'<span style="color:var(--lose)">• متأخرة</span>':''}</div></div></div>`).join(''):'<div class="empty">مفيش متابعات مستحقة 🎉</div>'}</div>
+   <div class="section-t">🔥 صفقات ساخنة</div>
+   <div class="list">${open.length?open.slice().sort((a,b)=>((a.expected_close_date||'9999')>(b.expected_close_date||'9999')?1:-1)).map(d=>`
+      <div class="row"><div class="g" style="cursor:pointer" onclick="openDeal(${d.id})"><div class="title">${esc(d.title)}</div>
+      <div class="meta">${esc(clientName(d.client_id))} • ${esc(d.stage)} ${d.expected_close_date?'• إغلاق '+d.expected_close_date:''}</div></div>
+      <span class="chip" style="color:var(--accent2)">${money(d.value)}</span></div>`).join(''):'<div class="empty">مفيش فرص مفتوحة</div>'}</div>`;
+}
+
+// ===== PIPELINE =====
+let dragId=null, pipeHat='';
+function renderPipe(m){
+  const {deals,clients}=CACHE;
+  m.innerHTML=`<div class="toolbar">
+     <div class="hatpills">
+       <span class="hatpill ${pipeHat===''?'active':''}" onclick="pipeHat='';render('pipe')">الكل</span>
+       ${OPT.hat.map(h=>`<span class="hatpill ${pipeHat===h?'active':''}" onclick="pipeHat='${h}';render('pipe')">${h}</span>`).join('')}
+     </div>
+     <button class="addbtn" onclick="openDeal()">+ فرصة جديدة</button></div>
+     <div class="board" id="board"></div>`;
+  const board=$('board');
+  const hatClients=new Set(clients.filter(c=>!pipeHat||c.hat===pipeHat).map(c=>c.id));
+  OPT.stage.forEach(stage=>{
+    const items=deals.filter(d=>d.stage===stage&&(!pipeHat||hatClients.has(d.client_id)));
+    const sum=items.reduce((s,d)=>s+(+d.value||0),0);
+    const col=document.createElement('div');col.className='col';col.dataset.stage=stage;
+    col.innerHTML=`<div class="col-h">${esc(stage)} <span class="sum">${items.length} • ${money(sum)}</span></div><div class="col-body"></div>`;
+    const body=col.querySelector('.col-body');
+    items.forEach(d=>{
+      const el=document.createElement('div');el.className='deal';el.draggable=true;
+      el.innerHTML=`<div class="dt">${esc(d.title)}</div><div class="dc">${esc(clientName(d.client_id))} ${d.service?'• '+esc(d.service):''}</div><div class="dv">${money(d.value)}</div>`;
+      el.ondragstart=()=>{dragId=d.id;};el.onclick=()=>openDeal(d.id);
+      body.appendChild(el);
+    });
+    col.ondragover=e=>{e.preventDefault();col.classList.add('drop');};
+    col.ondragleave=()=>col.classList.remove('drop');
+    col.ondrop=async e=>{e.preventDefault();col.classList.remove('drop');if(dragId==null)return;
+      await sb.from('deals').update({stage}).eq('id',dragId);dragId=null;refresh('pipe');};
+    board.appendChild(col);
+  });
+}
+
+// ===== CLIENTS =====
+const statusBadge=s=>{const map={'عميل محتمل':'b-lead','تم التواصل':'b-lead','عميل حالي':'b-active','متوقف':'b-paused','منتهي':'b-dead'};return `<span class="badge ${map[s]||'b-lead'}">${esc(s)}</span>`;};
+let cQuery='',cStatus='',cHat='';
+function renderClients(m){
+  let list=CACHE.clients;
+  if(cQuery)list=list.filter(c=>(c.name||'').includes(cQuery)||(c.business_type||'').includes(cQuery)||(c.city||'').includes(cQuery));
+  if(cStatus)list=list.filter(c=>c.status===cStatus);
+  if(cHat)list=list.filter(c=>c.hat===cHat);
+  m.innerHTML=`<div class="toolbar">
+     <div class="filters">
+       <input id="cq" placeholder="🔍 ابحثي باسم العميل / النشاط / المدينة" value="${esc(cQuery)}">
+       <select id="cst"><option value="">كل الحالات</option>${OPT.status.map(s=>`<option ${s===cStatus?'selected':''}>${s}</option>`).join('')}</select>
+       <select id="cht"><option value="">كل القبعات</option>${OPT.hat.map(h=>`<option ${h===cHat?'selected':''}>${h}</option>`).join('')}</select>
+     </div>
+     <button class="ghostbtn" onclick="exportClients()">⬇ إكسل</button>
+     <button class="addbtn" onclick="openClient()">+ عميل</button></div>
+   <div class="list">${list.length?list.map(c=>{const wa=waLink(c.whatsapp);
+      return `<div class="row"><div class="g" style="cursor:pointer" onclick="openClientDetail(${c.id})">
+        <div class="title">${esc(c.name)} ${statusBadge(c.status)}</div>
+        <div class="meta">${esc(c.business_type||'')} ${c.city?'• '+esc(c.city):''} ${c.hat?'• '+esc(c.hat):''} ${c.source?'• من '+esc(c.source):''}</div></div>
+        ${wa?`<a class="wa" href="${wa}" target="_blank" onclick="event.stopPropagation()">واتساب</a>`:''}</div>`;
+     }).join(''):'<div class="empty">مفيش نتائج</div>'}</div>`;
+  $('cq').oninput=e=>{cQuery=e.target.value;renderClients(m);const i=$('cq');i.focus();i.setSelectionRange(i.value.length,i.value.length);};
+  $('cst').onchange=e=>{cStatus=e.target.value;renderClients(m);};
+  $('cht').onchange=e=>{cHat=e.target.value;renderClients(m);};
+}
+
+window.openClientDetail=(id)=>{
+  const c=CACHE.clients.find(x=>x.id===id);if(!c)return;
+  const deals=CACHE.deals.filter(d=>d.client_id===id);
+  const fups=CACHE.fups.filter(f=>f.client_id===id);
+  const wa=waLink(c.whatsapp);
+  showModal(`${esc(c.name)} ${statusBadge(c.status)}`,`
+    <div style="color:var(--muted);font-size:14px;margin-bottom:6px">
+      ${esc(c.business_type||'')} ${c.city?'• '+esc(c.city):''} ${c.hat?'• '+esc(c.hat):''}<br>
+      ${c.whatsapp?'📱 '+esc(c.whatsapp):''} ${c.email?'• ✉ '+esc(c.email):''} ${c.source?'• مصدر: '+esc(c.source):''}
+    </div>
+    ${c.notes?`<div class="mini">${esc(c.notes)}</div>`:''}
+    <div style="display:flex;gap:8px;margin:12px 0">
+      ${wa?`<a class="wa" href="${wa}" target="_blank">فتح واتساب</a>`:''}
+      <button class="ghostbtn" onclick="closeModal();openClient(${id})">✎ تعديل البيانات</button>
+    </div>
+    <div class="detail-sec"><h4>الفرص (${deals.length}) <a style="color:var(--accent);cursor:pointer;float:left;font-size:13px" onclick="closeModal();openDeal(null,${id})">+ فرصة</a></h4>
+      ${deals.length?deals.map(d=>`<div class="mini" style="cursor:pointer" onclick="closeModal();openDeal(${d.id})"><span>${esc(d.title)} <span class="chip">${esc(d.stage)}</span></span><b style="color:var(--accent2)">${money(d.value)}</b></div>`).join(''):'<div class="empty" style="padding:12px">—</div>'}</div>
+    <div class="detail-sec"><h4>المتابعات (${fups.length}) <a style="color:var(--accent);cursor:pointer;float:left;font-size:13px" onclick="closeModal();openFollow(null,${id})">+ متابعة</a></h4>
+      ${fups.length?fups.map(f=>`<div class="mini"><span>${f.done?'✅':'🔸'} ${esc(f.type)} — ${esc(f.notes||'')}</span><span style="color:var(--muted)">${f.due_date||''}</span></div>`).join(''):'<div class="empty" style="padding:12px">—</div>'}</div>
+  `,null,null,true);
+};
+
+window.openClient=(id=null)=>{
+  const d=CACHE.clients.find(x=>x.id===id)||{};
+  showModal(`${d.id?'تعديل عميل':'عميل جديد'}`,`
+    <label>اسم العميل / النشاط *</label><input id="f_name" value="${esc(d.name)}">
+    <div class="grid2"><div><label>نوع النشاط</label><input id="f_bt" value="${esc(d.business_type)}"></div>
+      <div><label>المدينة</label><input id="f_city" value="${esc(d.city)}"></div></div>
+    <div class="grid2"><div><label>واتساب</label><input id="f_wa" value="${esc(d.whatsapp)}" placeholder="9665xxxxxxxx"></div>
+      <div><label>الإيميل</label><input id="f_email" value="${esc(d.email)}"></div></div>
+    <div class="grid2"><div><label>الحالة</label><select id="f_status">${options(OPT.status,d.status)}</select></div>
+      <div><label>القبعة</label><select id="f_hat">${options(OPT.hat,d.hat)}</select></div></div>
+    <div class="grid2"><div><label>المصدر</label><input id="f_source" value="${esc(d.source)}"></div>
+      <div><label>إنستغرام</label><input id="f_ig" value="${esc(d.instagram)}"></div></div>
+    <label>ملاحظات</label><textarea id="f_notes" rows="2">${esc(d.notes)}</textarea>
+  `,async()=>{
+    const row={name:$('f_name').value.trim(),business_type:$('f_bt').value,city:$('f_city').value,whatsapp:$('f_wa').value,email:$('f_email').value,status:$('f_status').value,hat:$('f_hat').value,source:$('f_source').value,instagram:$('f_ig').value,notes:$('f_notes').value};
+    if(!row.name)return alert('اكتبي اسم العميل');
+    if(d.id)await sb.from('clients').update(row).eq('id',d.id);else await sb.from('clients').insert(row);
+    closeModal();refresh('clients');
+  },d.id?async()=>{if(confirm('حذف هذا العميل وكل صفقاته؟')){await sb.from('clients').delete().eq('id',d.id);closeModal();refresh('clients');}}:null);
+};
+
+window.openDeal=(id=null,presetClient=null)=>{
+  const d=CACHE.deals.find(x=>x.id===id)||{};
+  const sel=d.client_id||presetClient;
+  const clientOpts=CACHE.clients.map(c=>`<option value="${c.id}" ${c.id===sel?'selected':''}>${esc(c.name)}</option>`).join('');
+  showModal(`${d.id?'تعديل فرصة':'فرصة جديدة'}`,`
+    <label>العميل *</label><select id="d_client">${clientOpts}</select>
+    <label>اسم الفرصة *</label><input id="d_title" value="${esc(d.title)}">
+    <div class="grid2"><div><label>الخدمة</label><select id="d_service">${options(OPT.service,d.service)}</select></div>
+      <div><label>المرحلة</label><select id="d_stage">${options(OPT.stage,d.stage)}</select></div></div>
+    <div class="grid2"><div><label>القيمة (ر.س)</label><input id="d_value" type="number" value="${esc(d.value)}"></div>
+      <div><label>طريقة الدفع</label><select id="d_pay">${options(OPT.payment,d.payment)}</select></div></div>
+    <label>تاريخ الإغلاق المتوقع</label><input id="d_close" type="date" value="${esc(d.expected_close_date)}">
+    <label>ملاحظات</label><textarea id="d_notes" rows="2">${esc(d.notes)}</textarea>
+  `,async()=>{
+    const row={client_id:Number($('d_client').value),title:$('d_title').value.trim(),service:$('d_service').value,stage:$('d_stage').value,value:$('d_value').value||null,payment:$('d_pay').value,expected_close_date:$('d_close').value||null,notes:$('d_notes').value};
+    if(!row.client_id)return alert('اختاري العميل (أضيفي عميل أولاً إن لزم)');
+    if(!row.title)return alert('اكتبي اسم الفرصة');
+    if(d.id)await sb.from('deals').update(row).eq('id',d.id);else await sb.from('deals').insert(row);
+    closeModal();refresh('pipe');
+  },d.id?async()=>{if(confirm('حذف هذه الفرصة؟')){await sb.from('deals').delete().eq('id',d.id);closeModal();refresh('pipe');}}:null);
+};
+
+// ===== FOLLOW-UPS =====
+function renderFollow(m){
+  const fups=CACHE.fups.slice().sort((a,b)=>((a.due_date||'9999')>(b.due_date||'9999')?1:-1));
+  m.innerHTML=`<div class="toolbar"><div class="section-t" style="margin:0">🔔 المتابعات</div>
+     <button class="addbtn" onclick="openFollow()">+ متابعة جديدة</button></div>
+   <div class="list">${fups.length?fups.map(f=>{const overdue=!f.done&&f.due_date&&f.due_date<today();
+      return `<div class="row"><input type="checkbox" style="width:20px;height:20px" ${f.done?'checked':''} onchange="toggleFollow(${f.id},this.checked)">
+        <div class="g" style="cursor:pointer;${f.done?'opacity:.5;text-decoration:line-through':''}" onclick="openFollow(${f.id})">
+          <div class="title">${esc(clientName(f.client_id))} <span class="chip">${esc(f.type)}</span></div>
+          <div class="meta">${esc(f.notes||'')} ${f.due_date?'• '+f.due_date:''} ${overdue?'<span style="color:var(--lose)">• متأخرة</span>':''}</div></div></div>`;
+     }).join(''):'<div class="empty">مفيش متابعات</div>'}</div>`;
+}
+window.toggleFollow=async(id,done)=>{await sb.from('follow_ups').update({done}).eq('id',id);const f=CACHE.fups.find(x=>x.id===id);if(f)f.done=done;updateBadges();};
+window.openFollow=(id=null,presetClient=null)=>{
+  const f=CACHE.fups.find(x=>x.id===id)||{};
+  const sel=f.client_id||presetClient;
+  const clientOpts=CACHE.clients.map(c=>`<option value="${c.id}" ${c.id===sel?'selected':''}>${esc(c.name)}</option>`).join('');
+  showModal(`${f.id?'تعديل متابعة':'متابعة جديدة'}`,`
+    <label>العميل *</label><select id="fu_client">${clientOpts}</select>
+    <div class="grid2"><div><label>النوع</label><select id="fu_type">${options(OPT.actype,f.type)}</select></div>
+      <div><label>تاريخ الاستحقاق</label><input id="fu_date" type="date" value="${esc(f.due_date)}"></div></div>
+    <label>ملاحظات</label><textarea id="fu_notes" rows="2">${esc(f.notes)}</textarea>
+  `,async()=>{
+    const row={client_id:Number($('fu_client').value),type:$('fu_type').value,due_date:$('fu_date').value||null,notes:$('fu_notes').value};
+    if(!row.client_id)return alert('اختاري العميل');
+    if(f.id)await sb.from('follow_ups').update(row).eq('id',f.id);else await sb.from('follow_ups').insert(row);
+    closeModal();refresh('follow');
+  },f.id?async()=>{if(confirm('حذف المتابعة؟')){await sb.from('follow_ups').delete().eq('id',f.id);closeModal();refresh('follow');}}:null);
+};
+
+// ===== REPORTS =====
+function bars(obj,fmt){
+  const entries=Object.entries(obj).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(1,...entries.map(e=>e[1]));
+  if(!entries.length)return '<div class="empty" style="padding:10px">—</div>';
+  return entries.map(([k,v])=>`<div class="barrow"><span class="bl" title="${esc(k)}">${esc(k)}</span>
+    <div class="bartrack"><div class="barfill" style="width:${Math.round(v/max*100)}%"></div></div>
+    <span class="bv">${fmt?fmt(v):v}</span></div>`).join('');
+}
+function renderReports(m){
+  const {deals,clients}=CACHE;
+  const won=deals.filter(d=>d.stage==='مكسوب'),lost=deals.filter(d=>d.stage==='مخسور');
+  const winRate=won.length+lost.length?Math.round(won.length/(won.length+lost.length)*100):0;
+  const wonVal=won.reduce((s,d)=>s+(+d.value||0),0);
+  const byHatVal={},byHatCount={};OPT.hat.forEach(h=>{byHatVal[h]=0;byHatCount[h]=0;});
+  clients.forEach(c=>{if(byHatCount[c.hat]!=null)byHatCount[c.hat]++;});
+  won.forEach(d=>{const c=clients.find(x=>x.id===d.client_id);if(c&&byHatVal[c.hat]!=null)byHatVal[c.hat]+=(+d.value||0);});
+  const byService={};deals.forEach(d=>{if(d.service)byService[d.service]=(byService[d.service]||0)+(+d.value||0);});
+  const byStage={};OPT.stage.forEach(s=>byStage[s]=0);deals.forEach(d=>{byStage[d.stage]=(byStage[d.stage]||0)+(+d.value||0);});
+  const byPay={};won.forEach(d=>{if(d.payment)byPay[d.payment]=(byPay[d.payment]||0)+(+d.value||0);});
+  const byMonth={};won.forEach(d=>{const dt=dateOf(d);if(dt){const k=dt.slice(0,7);byMonth[k]=(byMonth[k]||0)+(+d.value||0);}});
+
+  m.innerHTML=`<div class="toolbar"><div class="section-t" style="margin:0">📈 التقارير والتحليلات</div>
+     <div style="display:flex;gap:8px;flex-wrap:wrap">
+       <button class="ghostbtn" onclick="printReport('week')">🖨️ تقرير أسبوعي PDF</button>
+       <button class="ghostbtn" onclick="printReport('month')">🖨️ تقرير شهري PDF</button>
+       <button class="ghostbtn" onclick="exportDeals()">⬇ تصدير الصفقات</button>
+     </div></div>
+   <div class="repgrid">
+     <div class="rcard"><h4>نسبة الإغلاق (Win Rate)</h4>
+       <div class="gauge"><div class="ring" style="--p:${winRate}"><div class="in">${winRate}%</div></div>
+         <div><div style="font-size:14px;color:var(--muted)">مكسوبة: <b style="color:var(--win)">${won.length}</b></div>
+         <div style="font-size:14px;color:var(--muted)">مخسورة: <b style="color:var(--lose)">${lost.length}</b></div>
+         <div style="font-size:14px;color:var(--muted);margin-top:6px">قيمة المبيعات: <b style="color:var(--accent2)">${money(wonVal)}</b></div></div></div></div>
+     <div class="rcard"><h4>المبيعات حسب القبعة</h4>${bars(byHatVal,money)}
+        <div style="color:var(--muted);font-size:12px;margin-top:6px">عدد العملاء: ${OPT.hat.map(h=>h+' '+byHatCount[h]).join(' • ')}</div></div>
+     <div class="rcard"><h4>قيمة الأنابيب حسب المرحلة</h4>${bars(byStage,money)}</div>
+     <div class="rcard"><h4>المبيعات حسب الخدمة</h4>${bars(byService,money)}</div>
+     <div class="rcard"><h4>المبيعات حسب طريقة الدفع</h4>${bars(byPay,money)}</div>
+     <div class="rcard"><h4>المبيعات حسب الشهر</h4>${bars(byMonth,money)}</div>
+   </div>`;
+}
+
+// ===== PRINT PDF REPORT =====
+window.printReport=(period)=>{
+  const {deals,clients,fups}=CACHE;
+  const label=period==='week'?'الأسبوعي':'الشهري';
+  const horizon=period==='week'?7:30;
+  const from=period==='week'?addDays(-6):(today().slice(0,8)+'01');
+  const to=today();
+  const inRange=d=>{const x=dateOf(d);return x&&x>=from&&x<=to;};
+  const wonP=deals.filter(d=>d.stage==='مكسوب'&&inRange(d));
+  const lostP=deals.filter(d=>d.stage==='مخسور'&&inRange(d));
+  const wonVal=wonP.reduce((s,d)=>s+(+d.value||0),0);
+  const newClients=clients.filter(c=>(c.created_at||'').slice(0,10)>=from);
+  const open=deals.filter(d=>!['مكسوب','مخسور'].includes(d.stage));
+  const openVal=open.reduce((s,d)=>s+(+d.value||0),0);
+  const wr=wonP.length+lostP.length?Math.round(wonP.length/(wonP.length+lostP.length)*100):0;
+  const upcoming=fups.filter(f=>!f.done&&f.due_date&&f.due_date>=today()&&f.due_date<=addDays(horizon)).sort((a,b)=>a.due_date>b.due_date?1:-1);
+  const byHat={};OPT.hat.forEach(h=>byHat[h]=0);wonP.forEach(d=>{const c=clients.find(x=>x.id===d.client_id);if(c&&byHat[c.hat]!=null)byHat[c.hat]+=(+d.value||0);});
+
+  const kpi=(b,s)=>`<div class="pr-kpi"><b>${b}</b><span>${s}</span></div>`;
+  const wonRows=wonP.length?wonP.map(d=>`<tr><td>${esc(clientName(d.client_id))}</td><td>${esc(d.title)}</td><td>${esc(d.service||'')}</td><td>${money(d.value)}</td><td>${esc(d.payment||'')}</td><td>${dateOf(d)}</td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center">لا يوجد</td></tr>';
+  const upRows=upcoming.length?upcoming.map(f=>`<tr><td>${esc(clientName(f.client_id))}</td><td>${esc(f.type)}</td><td>${esc(f.notes||'')}</td><td>${f.due_date}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center">لا يوجد</td></tr>';
+  const hatRows=Object.entries(byHat).filter(([,v])=>v>0).map(([k,v])=>`<tr><td>${k}</td><td>${money(v)}</td></tr>`).join('')||'<tr><td colspan="2" style="text-align:center">لا يوجد</td></tr>';
+
+  $('printArea').innerHTML=`
+    <div class="pr-h">
+      <div><div class="pr-logo">ROAR</div><h2 class="pr-title">التقرير ${label} للمبيعات</h2></div>
+      <div class="pr-meta">الفترة: ${from} ← ${to}<br>إعداد: ${esc(PREPARED_BY)}<br>تاريخ الإنشاء: ${to}</div>
+    </div>
+    <div class="pr-kpis">
+      ${kpi(wonP.length,'صفقات مكسوبة')}
+      ${kpi(money(wonVal),'قيمة المبيعات')}
+      ${kpi(wr+'%','نسبة الإغلاق')}
+      ${kpi(newClients.length,'عملاء جدد')}
+      ${kpi(money(openVal),'أنابيب مفتوحة')}
+    </div>
+    <div class="pr-sec">الصفقات المكسوبة خلال الفترة</div>
+    <table class="pr"><thead><tr><th>العميل</th><th>الفرصة</th><th>الخدمة</th><th>القيمة</th><th>الدفع</th><th>التاريخ</th></tr></thead><tbody>${wonRows}</tbody></table>
+    <div class="pr-sec">المبيعات حسب القبعة</div>
+    <table class="pr"><thead><tr><th>القبعة</th><th>القيمة</th></tr></thead><tbody>${hatRows}</tbody></table>
+    <div class="pr-sec">المتابعات القادمة (${horizon} يوم)</div>
+    <table class="pr"><thead><tr><th>العميل</th><th>النوع</th><th>الملاحظة</th><th>الاستحقاق</th></tr></thead><tbody>${upRows}</tbody></table>
+    <div class="pr-foot"><span>ROAR CRM — تقرير ${label}</span><span>إعداد: ${esc(PREPARED_BY)}</span></div>`;
+  setTimeout(()=>window.print(),150);
+};
+
+// ===== EXPORT CSV =====
+function downloadCSV(name,rows,headers){
+  const head=headers.map(h=>h.label).join(',');
+  const body=rows.map(r=>headers.map(h=>{let v=r[h.key]==null?'':String(r[h.key]);v=v.replace(/"/g,'""');return /[",\n]/.test(v)?`"${v}"`:v;}).join(',')).join('\n');
+  const blob=new Blob(['﻿'+head+'\n'+body],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+}
+window.exportClients=()=>downloadCSV('roar-clients.csv',CACHE.clients,[
+  {key:'name',label:'الاسم'},{key:'business_type',label:'النشاط'},{key:'city',label:'المدينة'},
+  {key:'whatsapp',label:'واتساب'},{key:'email',label:'الإيميل'},{key:'status',label:'الحالة'},
+  {key:'hat',label:'القبعة'},{key:'source',label:'المصدر'},{key:'instagram',label:'إنستغرام'},{key:'notes',label:'ملاحظات'}]);
+window.exportDeals=()=>downloadCSV('roar-deals.csv',CACHE.deals.map(d=>({...d,client:clientName(d.client_id)})),[
+  {key:'client',label:'العميل'},{key:'title',label:'الفرصة'},{key:'service',label:'الخدمة'},
+  {key:'stage',label:'المرحلة'},{key:'value',label:'القيمة'},{key:'payment',label:'الدفع'},
+  {key:'expected_close_date',label:'الإغلاق المتوقع'},{key:'notes',label:'ملاحظات'}]);
+
+// ===== MODAL =====
+function showModal(title,body,onSave,onDelete,noSave){
+  $('modalMount').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal"><button class="close" onclick="closeModal()">×</button><h3>${title}</h3>
+      <div style="margin-top:14px">${body}</div>
+      ${noSave?'':'<button class="btn" id="mSave">حفظ</button>'}
+      ${onDelete?'<button class="btn secondary" id="mDel" style="color:var(--lose);border-color:var(--lose)">حذف</button>':''}
+    </div></div>`;
+  if(onSave&&$('mSave'))$('mSave').onclick=onSave;
+  if(onDelete&&$('mDel'))$('mDel').onclick=onDelete;
+}
+window.closeModal=()=>{$('modalMount').innerHTML='';};
+</script>
+</body>
+</html>
